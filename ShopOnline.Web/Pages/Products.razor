@@ -1,0 +1,38 @@
+﻿@page "/"
+@inject IProductService ProductService
+
+@if (ProductList is null)
+{
+    <h3>Loading Products....</h3>
+}
+else
+{
+    <h3 class="mb-3">Products</h3>
+
+    @if (ProductList.Count() > 0)
+    {
+        var groupProductByCategory = from product in ProductList
+                                     group product by product.CategoryId into prodByCatGroup
+                                     orderby prodByCatGroup.Key
+                                     select prodByCatGroup;
+
+        foreach (var prodGroup in groupProductByCategory)
+        {
+            <div class="row mt-3">
+                <h4>@prodGroup.FirstOrDefault(gp => gp.CategoryId == prodGroup.Key)!.CategoryName</h4>
+                <DisplayProduct Products=@prodGroup />                
+            </div>
+            <hr class="mb-3"/>
+        }        
+    }
+}
+
+@code {
+
+    public IEnumerable<ProductDto> ?ProductList { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        ProductList = await ProductService.GetItems();
+    }
+}
